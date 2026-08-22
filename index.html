@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Handwerk Programm</title>
+<style>
+:root{
+  --navy:#0f2138;
+  --navy-2:#16304f;
+  --blue:#2563eb;
+  --blue-dark:#1d4ed8;
+  --bg:#f2f4f8;
+  --card:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --border:#e3e7ee;
+  --green:#16a34a;
+  --green-bg:#e8f7ee;
+  --red:#dc2626;
+  --red-bg:#fdecec;
+  --amber:#d97706;
+  --amber-bg:#fef3e0;
+  --grey-bg:#eef0f3;
+  --radius:10px;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:14px;
+}
+#app{display:flex;min-height:100vh;}
+
+/* Sidebar */
+.sidebar{
+  width:220px;flex-shrink:0;background:var(--navy);color:#cfd8e3;
+  display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;
+  z-index:50;transition:transform .2s ease;
+}
+.sidebar-logo{
+  padding:18px 16px;font-weight:700;font-size:16px;color:#fff;
+  border-bottom:1px solid rgba(255,255,255,.08);letter-spacing:.3px;
+}
+.sidebar-logo small{display:block;font-weight:400;font-size:11px;color:#8ea2bd;margin-top:2px;}
+.nav{list-style:none;margin:0;padding:8px 0;overflow-y:auto;flex:1;}
+.nav li a{
+  display:flex;align-items:center;gap:10px;padding:10px 18px;color:#cfd8e3;
+  text-decoration:none;font-size:13.5px;cursor:pointer;border-left:3px solid transparent;
+}
+.nav li a .ic{width:18px;text-align:center;font-size:15px;}
+.nav li a:hover{background:rgba(255,255,255,.06);color:#fff;}
+.nav li a.active{background:rgba(37,99,235,.25);border-left-color:var(--blue);color:#fff;}
+.sidebar-foot{padding:12px 16px;font-size:11px;color:#6f8199;border-top:1px solid rgba(255,255,255,.08);}
+
+/* Main */
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{
+  background:linear-gradient(90deg,var(--blue-dark),var(--blue));
+  color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:40;
+}
+.topbar h1{font-size:18px;margin:0;font-weight:600;display:flex;align-items:center;gap:10px;}
+.topbar .who{font-size:13px;opacity:.9;}
+.hamburger{display:none;background:none;border:none;color:#fff;font-size:20px;cursor:pointer;margin-right:8px;}
+.content{padding:22px 26px;flex:1;}
+
+.view{display:none;}
+.view.active{display:block;}
+
+/* Cards / layout helpers */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+.grid{display:grid;gap:16px;}
+.grid.cols-2{grid-template-columns:1fr 1fr;}
+.grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
+.grid.cols-4{grid-template-columns:repeat(4,1fr);}
+@media(max-width:900px){.grid.cols-2,.grid.cols-3,.grid.cols-4{grid-template-columns:1fr;}}
+
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+.section-head h2{margin:0;font-size:20px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.section-head .actions{display:flex;gap:8px;flex-wrap:wrap;}
+
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;display:flex;align-items:center;gap:14px;}
+.stat-card .icon{width:42px;height:42px;border-radius:50%;background:var(--grey-bg);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.stat-card .label{font-size:12px;color:var(--muted);margin-bottom:2px;}
+.stat-card .value{font-size:19px;font-weight:700;}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:8px;border:1px solid transparent;
+  font-size:13.5px;font-weight:500;cursor:pointer;background:var(--grey-bg);color:var(--text);white-space:nowrap;
+}
+.btn:hover{filter:brightness(0.97);}
+.btn.primary{background:var(--blue);color:#fff;}
+.btn.primary:hover{background:var(--blue-dark);}
+.btn.danger{background:var(--red-bg);color:var(--red);}
+.btn.success{background:var(--green-bg);color:var(--green);}
+.btn.ghost{background:transparent;border:1px solid var(--border);}
+.btn.sm{padding:6px 10px;font-size:12.5px;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* Forms */
+label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px;font-weight:500;}
+input[type=text],input[type=number],input[type=date],input[type=email],input[type=tel],select,textarea{
+  width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;
+  font-family:inherit;background:#fff;color:var(--text);
+}
+textarea{resize:vertical;}
+.field{margin-bottom:14px;}
+fieldset{border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin:0 0 16px 0;}
+legend{font-weight:600;font-size:13px;padding:0 6px;color:var(--navy-2);}
+.radio-group{display:flex;gap:16px;margin-bottom:14px;}
+.radio-group label{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--text);font-weight:400;}
+
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+thead th{
+  text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);
+  border-bottom:1px solid var(--border);padding:8px 10px;white-space:nowrap;
+}
+tbody td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tbody tr:hover{background:#fafbfd;}
+tbody tr.clickable{cursor:pointer;}
+.num{text-align:right;font-variant-numeric:tabular-nums;}
+.table-wrap{overflow-x:auto;}
+.empty-hint{padding:40px 20px;text-align:center;color:var(--muted);}
+
+/* Badges */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;}
+.badge.grey{background:var(--grey-bg);color:var(--muted);}
+.badge.blue{background:#e8f0fe;color:var(--blue-dark);}
+.badge.green{background:var(--green-bg);color:var(--green);}
+.badge.red{background:var(--red-bg);color:var(--red);}
+.badge.amber{background:var(--amber-bg);color:var(--amber);}
+
+/* Positions table */
+.pos-table input, .pos-table select{padding:7px 8px;font-size:13px;}
+.pos-table td{padding:5px;}
+.pos-table .btn-del{background:transparent;border:none;color:var(--red);cursor:pointer;font-size:16px;}
+.sums{margin-left:auto;width:280px;margin-top:14px;}
+.sums div{display:flex;justify-content:space-between;padding:5px 0;font-size:13.5px;}
+.sums .total{border-top:1px solid var(--border);margin-top:6px;padding-top:10px;font-weight:700;font-size:16px;}
+
+/* Toolbar / search */
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.toolbar input[type=text]{max-width:260px;}
+.toolbar select{max-width:170px;}
+
+/* Modal */
+.overlay{
+  position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:flex-start;justify-content:center;
+  z-index:100;overflow-y:auto;padding:40px 16px;
+}
+.overlay.active{display:flex;}
+.modal{background:#fff;border-radius:12px;max-width:640px;width:100%;padding:24px;position:relative;}
+.modal h3{margin-top:0;}
+.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+
+/* Toast */
+#toast{position:fixed;bottom:20px;right:20px;background:var(--navy);color:#fff;padding:12px 18px;border-radius:8px;
+  font-size:13.5px;opacity:0;transform:translateY(10px);transition:.25s;z-index:200;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.2);}
+#toast.show{opacity:1;transform:translateY(0);}
+
+/* Customer autocomplete */
+.autocomplete{position:relative;}
+.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);
+  border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,.08);max-height:220px;overflow-y:auto;z-index:30;display:none;}
+.autocomplete-list.active{display:block;}
+.autocomplete-list div{padding:9px 12px;cursor:pointer;font-size:13.5px;}
+.autocomplete-list div:hover{background:var(--grey-bg);}
+.autocomplete-list .muted{font-size:11.5px;color:var(--muted);}
+
+.helptext{font-size:12px;color:var(--muted);margin-top:4px;}
+.divider{border:none;border-top:1px solid var(--border);margin:18px 0;}
+a.link{color:var(--blue);cursor:pointer;text-decoration:none;font-weight:500;}
+a.link:hover{text-decoration:underline;}
+.rowbtns{display:flex;gap:6px;justify-content:flex-end;}
+
+/* Print */
+#druckbereich{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #druckbereich, #druckbereich *{visibility:visible;}
+  #druckbereich{display:block;position:absolute;top:0;left:0;width:100%;padding:0;margin:0;}
+  .no-print{display:none!important;}
+}
+.doc-head{display:flex;justify-content:space-between;margin-bottom:30px;}
+.doc-logo img{max-height:60px;max-width:220px;}
+.doc-firma-mini{font-size:10.5px;color:#555;margin-bottom:22px;border-bottom:1px solid #ccc;padding-bottom:6px;}
+.doc-addr{margin-bottom:26px;font-size:13px;line-height:1.5;}
+.doc-meta{width:260px;font-size:13px;}
+.doc-meta table{width:100%;}
+.doc-meta td{padding:3px 0;border:none;}
+.doc-title{font-size:20px;font-weight:700;margin:20px 0 10px;}
+.doc-intro{white-space:pre-wrap;margin-bottom:16px;font-size:13px;line-height:1.5;}
+.doc-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:10px;}
+.doc-table th{border-bottom:2px solid #333;text-align:left;padding:6px 4px;}
+.doc-table td{border-bottom:1px solid #ddd;padding:6px 4px;}
+.doc-footer{margin-top:40px;font-size:10.5px;color:#555;border-top:1px solid #ccc;padding-top:8px;display:flex;justify-content:space-between;gap:20px;}
+.doc-footer div{flex:1;white-space:pre-wrap;}
+
+@media(max-width:860px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .hamburger{display:inline-block;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">Handwerk Programm<small id="firmaNameSmall">Anvolt GmbH</small></div>
+    <ul class="nav" id="navList">
+      <li><a data-view="dashboard" class="ic-nav"><span class="ic">📊</span> Dashboard</a></li>
+      <li><a data-view="kunden" class="ic-nav"><span class="ic">👤</span> Kunden</a></li>
+      <li><a data-view="angebote" class="ic-nav"><span class="ic">📄</span> Angebote</a></li>
+      <li><a data-view="rechnungen" class="ic-nav"><span class="ic">🧾</span> Rechnungen</a></li>
+      <li><a data-view="einstellungen" class="ic-nav"><span class="ic">⚙️</span> Einstellungen</a></li>
+    </ul>
+    <div class="sidebar-foot">Handwerk Programm v0.1<br>Lokal gespeichert im Browser</div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <h1><button class="hamburger" id="hamburgerBtn">☰</button><span id="topTitle">Dashboard</span></h1>
+      <div class="who">Willkommen, <span id="topWho">Quang Loc</span></div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <section class="view active" id="view-dashboard">
+        <div class="section-head"><h2>📊 Dashboard</h2></div>
+        <div class="grid cols-4" id="dashStats"></div>
+        <div class="grid cols-2" style="margin-top:20px;">
+          <div class="card">
+            <div class="section-head"><h2 style="font-size:15px;">Neueste Angebote</h2><a class="link" data-view="angebote">alle ansehen →</a></div>
+            <div id="dashAngeboteList"></div>
+          </div>
+          <div class="card">
+            <div class="section-head"><h2 style="font-size:15px;">Offene Rechnungen</h2><a class="link" data-view="rechnungen">alle ansehen →</a></div>
+            <div id="dashRechnungenList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- KUNDEN LIST -->
+      <section class="view" id="view-kunden">
+        <div class="section-head">
+          <h2>👤 Kunden</h2>
+          <div class="actions"><button class="btn primary" onclick="openKundeForm()">+ Neuer Kunde</button></div>
+        </div>
+        <div class="card">
+          <div class="toolbar">
+            <input type="text" id="kundenSuche" placeholder="Suche nach Name, Firma, Ort..." oninput="renderKundenListe()">
+          </div>
+          <div class="table-wrap"><table id="kundenTable">
+            <thead><tr><th>Nr.</th><th>Name / Firma</th><th>Ort</th><th>Telefon</th><th>E-Mail</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+          <div class="empty-hint" id="kundenEmpty" style="display:none;">Noch keine Kunden angelegt.</div>
+        </div>
+      </section>
+
+      <!-- KUNDE FORM (modal) -->
+      <div class="overlay" id="kundeOverlay">
+        <div class="modal">
+          <button class="modal-close" onclick="closeKundeForm()">✕</button>
+          <h3 id="kundeFormTitle">Neuer Kunde</h3>
+          <input type="hidden" id="k_id">
+          <div class="radio-group">
+            <label><input type="radio" name="k_typ" value="firma" checked onchange="toggleKundeTyp()"> Firma</label>
+            <label><input type="radio" name="k_typ" value="privat" onchange="toggleKundeTyp()"> Privatperson</label>
+          </div>
+          <div class="grid cols-2">
+            <div class="field"><label>Kundennummer</label><input type="text" id="k_nummer"></div>
+            <div class="field" id="k_ustid_field"><label>USt-IdNr. (optional)</label><input type="text" id="k_ustid"></div>
+          </div>
+          <div class="field" id="k_firma_field"><label>Firmenname</label><input type="text" id="k_firma"></div>
+          <div class="grid cols-2">
+            <div class="field"><label>Vorname</label><input type="text" id="k_vorname"></div>
+            <div class="field"><label>Nachname</label><input type="text" id="k_nachname"></div>
+          </div>
+          <div class="field"><label>Straße + Hausnr.</label><input type="text" id="k_strasse"></div>
+          <div class="grid cols-3">
+            <div class="field"><label>PLZ</label><input type="text" id="k_plz"></div>
+            <div class="field" style="grid-column:span 2;"><label>Ort</label><input type="text" id="k_ort"></div>
+          </div>
+          <div class="grid cols-2">
+            <div class="field"><label>Telefon</label><input type="tel" id="k_telefon"></div>
+            <div class="field"><label>E-Mail</label><input type="email" id="k_email"></div>
+          </div>
+          <div class="field"><label>Zahlungsziel (Tage)</label><input type="number" id="k_zahlungsziel" value="14"></div>
+          <div class="field"><label>Notizen</label><textarea id="k_notizen" rows="3"></textarea></div>
+          <div class="modal-actions">
+            <button class="btn ghost" onclick="closeKundeForm()">Abbrechen</button>
+            <button class="btn danger" id="k_delete_btn" style="display:none;" onclick="deleteKunde()">Löschen</button>
+            <button class="btn primary" onclick="saveKunde()">Speichern</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANGEBOTE LIST -->
+      <section class="view" id="view-angebote">
+        <div class="section-head">
+          <h2>📄 Angebote</h2>
+          <div class="actions"><button class="btn primary" onclick="openAngebotForm()">+ Neues Angebot</button></div>
+        </div>
+        <div class="card">
+          <div class="toolbar">
+            <input type="text" id="angeboteSuche" placeholder="Suche..." oninput="renderAngeboteListe()">
+            <select id="angeboteStatusFilter" onchange="renderAngeboteListe()">
+              <option value="">Alle Status</option>
+              <option value="entwurf">Entwurf</option>
+              <option value="versendet">Versendet</option>
+              <option value="angenommen">Angenommen</option>
+              <option value="abgelehnt">Abgelehnt</option>
+              <option value="abgelaufen">Abgelaufen</option>
+            </select>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Nummer</th><th>Kunde</th><th>Bezeichnung</th><th>Datum</th><th>Status</th><th class="num">Netto</th><th></th></tr></thead>
+            <tbody id="angeboteTbody"></tbody>
+          </table></div>
+          <div class="empty-hint" id="angeboteEmpty" style="display:none;">Noch keine Angebote erstellt.</div>
+        </div>
+      </section>
+
+      <!-- ANGEBOT FORM -->
+      <section class="view" id="view-angebot-form">
+        <div class="section-head">
+          <h2 id="angebotFormTitle">📄 Neues Angebot</h2>
+          <div class="actions">
+            <button class="btn ghost" onclick="showView('angebote')">← Zurück</button>
+            <button class="btn ghost" id="ang_vorschau_btn" onclick="vorschauDokument('angebot')" style="display:none;">👁 Vorschau</button>
+            <button class="btn ghost" id="ang_druck_btn" onclick="druckenDokument('angebot')" style="display:none;">🖨 Drucken/PDF</button>
+            <button class="btn success" id="ang_convert_btn" onclick="angebotInRechnungUmwandeln()" style="display:none;">→ In Rechnung umwandeln</button>
+            <button class="btn danger" id="ang_delete_btn" style="display:none;" onclick="deleteAngebot()">Löschen</button>
+            <button class="btn primary" onclick="saveAngebot()">Speichern</button>
+          </div>
+        </div>
+        <input type="hidden" id="a_id">
+        <div class="card">
+          <div class="grid cols-2">
+            <div class="field autocomplete">
+              <label>Kunde</label>
+              <input type="text" id="a_kunde_suche" placeholder="Kunde suchen..." oninput="autocompleteKunde('a')" onfocus="autocompleteKunde('a')">
+              <input type="hidden" id="a_kunde_id">
+              <div class="autocomplete-list" id="a_kunde_list"></div>
+            </div>
+            <div class="field"><label>Bezeichnung</label><input type="text" id="a_bezeichnung" placeholder="z.B. PV-Anlage Musterstraße 5"></div>
+          </div>
+          <div class="grid cols-4">
+            <div class="field"><label>Angebotsnummer</label><input type="text" id="a_nummer" disabled></div>
+            <div class="field"><label>Datum</label><input type="date" id="a_datum"></div>
+            <div class="field"><label>Gültig bis</label><input type="date" id="a_gueltig"></div>
+            <div class="field"><label>Status</label>
+              <select id="a_status">
+                <option value="entwurf">Entwurf</option>
+                <option value="versendet">Versendet</option>
+                <option value="angenommen">Angenommen</option>
+                <option value="abgelehnt">Abgelehnt</option>
+                <option value="abgelaufen">Abgelaufen</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label>Anschreiben / Einleitungstext</label><textarea id="a_anschreiben" rows="3" placeholder="Sehr geehrte/r ..., vielen Dank für Ihre Anfrage. Wir bieten Ihnen an:"></textarea></div>
+
+          <div id="a_positionen_wrap"></div>
+          <button class="btn sm" onclick="addPosition('a')">+ Position hinzufügen</button>
+
+          <div class="grid cols-2" style="margin-top:16px;">
+            <div class="field"><label>USt-Satz</label>
+              <select id="a_ustsatz"><option value="19">19%</option><option value="7">7%</option><option value="0">0% (steuerfrei/Kleinunternehmer)</option></select>
+            </div>
+            <div></div>
+          </div>
+          <div class="sums" id="a_sums"></div>
+        </div>
+      </section>
+
+      <!-- RECHNUNGEN LIST -->
+      <section class="view" id="view-rechnungen">
+        <div class="section-head">
+          <h2>🧾 Rechnungen</h2>
+          <div class="actions"><button class="btn primary" onclick="openRechnungForm()">+ Neue Rechnung</button></div>
+        </div>
+        <div class="card">
+          <div class="toolbar">
+            <input type="text" id="rechnungenSuche" placeholder="Suche..." oninput="renderRechnungenListe()">
+            <select id="rechnungenStatusFilter" onchange="renderRechnungenListe()">
+              <option value="">Alle Status</option>
+              <option value="offen">Offen</option>
+              <option value="teilbezahlt">Teilbezahlt</option>
+              <option value="bezahlt">Bezahlt</option>
+              <option value="ueberfaellig">Überfällig</option>
+              <option value="storniert">Storniert</option>
+            </select>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Nummer</th><th>Kunde</th><th>Rechnungsdatum</th><th>Fällig</th><th>Status</th><th class="num">Brutto</th><th class="num">Offen</th><th></th></tr></thead>
+            <tbody id="rechnungenTbody"></tbody>
+          </table></div>
+          <div class="empty-hint" id="rechnungenEmpty" style="display:none;">Noch keine Rechnungen erstellt.</div>
+        </div>
+      </section>
+
+      <!-- RECHNUNG FORM -->
+      <section class="view" id="view-rechnung-form">
+        <div class="section-head">
+          <h2 id="rechnungFormTitle">🧾 Neue Rechnung</h2>
+          <div class="actions">
+            <button class="btn ghost" onclick="showView('rechnungen')">← Zurück</button>
+            <button class="btn ghost" id="re_vorschau_btn" onclick="vorschauDokument('rechnung')" style="display:none;">👁 Vorschau</button>
+            <button class="btn ghost" id="re_druck_btn" onclick="druckenDokument('rechnung')" style="display:none;">🖨 Drucken/PDF</button>
+            <button class="btn ghost" id="re_zahlung_btn" onclick="openZahlungModal()" style="display:none;">💶 Zahlung erfassen</button>
+            <button class="btn danger" id="re_storno_btn" onclick="stornoRechnung()" style="display:none;">Stornieren</button>
+            <button class="btn primary" id="re_save_btn" onclick="saveRechnung()">Speichern</button>
+          </div>
+        </div>
+        <input type="hidden" id="r_id">
+        <div class="card" id="r_storno_hinweis" style="display:none;background:var(--red-bg);border-color:var(--red);margin-bottom:16px;">
+          Diese Rechnung ist <strong>storniert</strong>. Inhalte können nicht mehr geändert werden.
+        </div>
+        <div class="card">
+          <div class="grid cols-2">
+            <div class="field autocomplete">
+              <label>Kunde</label>
+              <input type="text" id="r_kunde_suche" placeholder="Kunde suchen..." oninput="autocompleteKunde('r')" onfocus="autocompleteKunde('r')">
+              <input type="hidden" id="r_kunde_id">
+              <div class="autocomplete-list" id="r_kunde_list"></div>
+            </div>
+            <div class="field"><label>Bezeichnung</label><input type="text" id="r_bezeichnung"></div>
+          </div>
+          <div class="grid cols-4">
+            <div class="field"><label>Rechnungsnummer</label><input type="text" id="r_nummer" disabled></div>
+            <div class="field"><label>Rechnungsdatum</label><input type="date" id="r_datum" onchange="updateFaelligkeit()"></div>
+            <div class="field"><label>Leistungsdatum</label><input type="date" id="r_leistungsdatum"></div>
+            <div class="field"><label>Fällig am</label><input type="date" id="r_faelligkeit"></div>
+          </div>
+          <div class="field"><label>Anschreiben / Einleitungstext</label><textarea id="r_anschreiben" rows="3" placeholder="Sehr geehrte/r ..., wir erlauben uns, Ihnen wie folgt in Rechnung zu stellen:"></textarea></div>
+
+          <div id="r_positionen_wrap"></div>
+          <button class="btn sm" onclick="addPosition('r')">+ Position hinzufügen</button>
+
+          <div class="grid cols-2" style="margin-top:16px;">
+            <div class="field"><label>USt-Satz</label>
+              <select id="r_ustsatz"><option value="19">19%</option><option value="7">7%</option><option value="0">0% (steuerfrei/Kleinunternehmer)</option></select>
+            </div>
+            <div></div>
+          </div>
+          <div class="sums" id="r_sums"></div>
+          <div id="r_zahlungen_wrap" style="margin-top:20px;"></div>
+        </div>
+      </section>
+
+      <!-- ZAHLUNG MODAL -->
+      <div class="overlay" id="zahlungOverlay">
+        <div class="modal" style="max-width:400px;">
+          <button class="modal-close" onclick="closeZahlungModal()">✕</button>
+          <h3>Zahlung erfassen</h3>
+          <div class="field"><label>Datum</label><input type="date" id="z_datum"></div>
+          <div class="field"><label>Betrag (€)</label><input type="number" id="z_betrag" step="0.01"></div>
+          <div class="field"><label>Notiz</label><input type="text" id="z_notiz" placeholder="z.B. Überweisung"></div>
+          <div class="modal-actions">
+            <button class="btn ghost" onclick="closeZahlungModal()">Abbrechen</button>
+            <button class="btn primary" onclick="saveZahlung()">Speichern</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EINSTELLUNGEN -->
+      <section class="view" id="view-einstellungen">
+        <div class="section-head"><h2>⚙️ Einstellungen</h2></div>
+        <div class="grid cols-2">
+          <div class="card">
+            <fieldset>
+              <legend>Firmendaten (erscheinen auf Angeboten/Rechnungen)</legend>
+              <div class="field"><label>Firmenname</label><input type="text" id="e_firmenname"></div>
+              <div class="field"><label>Straße + Hausnr.</label><input type="text" id="e_strasse"></div>
+              <div class="grid cols-3">
+                <div class="field"><label>PLZ</label><input type="text" id="e_plz"></div>
+                <div class="field" style="grid-column:span 2;"><label>Ort</label><input type="text" id="e_ort"></div>
+              </div>
+              <div class="grid cols-2">
+                <div class="field"><label>Telefon</label><input type="tel" id="e_telefon"></div>
+                <div class="field"><label>E-Mail</label><input type="email" id="e_email"></div>
+              </div>
+              <div class="field"><label>Website</label><input type="text" id="e_web"></div>
+              <div class="field"><label>Geschäftsführer</label><input type="text" id="e_gf"></div>
+              <div class="field"><label>Logo</label><input type="file" id="e_logo_input" accept="image/*" onchange="handleLogoUpload(event)">
+                <div id="e_logo_preview" style="margin-top:8px;"></div>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Steuer &amp; Bank</legend>
+              <div class="field"><label><input type="checkbox" id="e_kleinunternehmer" style="width:auto;" onchange="toggleKleinunternehmer()"> Kleinunternehmer nach §19 UStG (keine USt ausweisen)</label></div>
+              <div class="grid cols-2">
+                <div class="field"><label>Steuernummer</label><input type="text" id="e_steuernummer"></div>
+                <div class="field"><label>USt-IdNr.</label><input type="text" id="e_ustid"></div>
+              </div>
+              <div class="field"><label>Bank</label><input type="text" id="e_bank"></div>
+              <div class="grid cols-2">
+                <div class="field"><label>IBAN</label><input type="text" id="e_iban"></div>
+                <div class="field"><label>BIC</label><input type="text" id="e_bic"></div>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Nummernkreise</legend>
+              <div class="grid cols-2">
+                <div class="field"><label>Präfix Angebote</label><input type="text" id="e_prefix_angebot"></div>
+                <div class="field"><label>Präfix Rechnungen</label><input type="text" id="e_prefix_rechnung"></div>
+              </div>
+              <div class="helptext">Format: PRÄFIX-JAHR-LFDNR, z.B. AN-2026-1. Änderung wirkt sich nur auf neue Dokumente aus.</div>
+            </fieldset>
+            <fieldset>
+              <legend>Dokumenttexte</legend>
+              <div class="field"><label>Standard-Fußzeile (auf allen PDFs)</label><textarea id="e_footer" rows="3" placeholder="z.B. Geschäftsführer, Handelsregister, Bankverbindung..."></textarea></div>
+            </fieldset>
+            <button class="btn primary" onclick="saveEinstellungen()">Einstellungen speichern</button>
+          </div>
+
+          <div class="card">
+            <fieldset>
+              <legend>Daten-Backup</legend>
+              <p class="helptext">Alle Daten werden aktuell nur lokal in diesem Browser gespeichert (noch keine Cloud-Synchronisierung). Regelmäßige Backups werden empfohlen.</p>
+              <button class="btn" onclick="exportData()">⬇ Backup herunterladen (JSON)</button>
+              <div class="field" style="margin-top:14px;">
+                <label>Backup wiederherstellen</label>
+                <input type="file" id="importFile" accept="application/json" onchange="importData(event)">
+              </div>
+            </fieldset>
+            <fieldset style="border-color:var(--red);">
+              <legend style="color:var(--red);">Gefahrenzone</legend>
+              <button class="btn danger" onclick="resetAllData()">Alle Daten löschen</button>
+            </fieldset>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<div id="druckbereich"></div>
+<div id="toast"></div>
+
+<script>
+/* =========================================================
+   STORAGE
+========================================================= */
+const STORAGE_KEY = 'hp_data_v1';
+
+function defaultData(){
+  return {
+    firma: {
+      firmenname:'', strasse:'', plz:'', ort:'', telefon:'', email:'', web:'',
+      gf:'', logo:'', kleinunternehmer:false, steuernummer:'', ustid:'',
+      bank:'', iban:'', bic:'', prefixAngebot:'AN', prefixRechnung:'RE', footer:''
+    },
+    kunden: [],
+    angebote: [],
+    rechnungen: [],
+    counters: { angebot:{}, rechnung:{} }
+  };
+}
+
+let DATA = loadData();
+
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultData();
+    const parsed = JSON.parse(raw);
+    const d = defaultData();
+    return Object.assign(d, parsed, {
+      firma: Object.assign(d.firma, parsed.firma||{}),
+      counters: Object.assign(d.counters, parsed.counters||{})
+    });
+  }catch(e){
+    console.error('Fehler beim Laden der Daten', e);
+    return defaultData();
+  }
+}
+
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+}
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+function uid(){ return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function addDaysISO(iso, days){
+  const d = iso ? new Date(iso) : new Date();
+  d.setDate(d.getDate()+Number(days||0));
+  return d.toISOString().slice(0,10);
+}
+function formatDate(iso){
+  if(!iso) return '–';
+  const [y,m,d] = iso.split('-');
+  return `${d}.${m}.${y}`;
+}
+function formatCurrency(n){
+  n = Number(n)||0;
+  return n.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+}
+function escapeHtml(s){
+  if(s===undefined||s===null) return '';
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+function confirmAction(msg){ return window.confirm(msg); }
+
+function kundeName(k){
+  if(!k) return '(unbekannt)';
+  if(k.typ==='privat') return [k.vorname,k.nachname].filter(Boolean).join(' ') || '(ohne Namen)';
+  return k.firma || '(ohne Namen)';
+}
+function kundeById(id){ return DATA.kunden.find(k=>k.id===id); }
+function findKunde(id){ return kundeById(id); }
+
+/* =========================================================
+   ROUTER
+========================================================= */
+const VIEW_TITLES = {
+  dashboard:'Dashboard', kunden:'Kunden', angebote:'Angebote', rechnungen:'Rechnungen',
+  einstellungen:'Einstellungen', 'angebot-form':'Angebot', 'rechnung-form':'Rechnung'
+};
+
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const el = document.getElementById('view-'+name);
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active', a.dataset.view===name));
+  document.getElementById('topTitle').textContent = VIEW_TITLES[name] || 'Handwerk Programm';
+  window.scrollTo(0,0);
+  document.getElementById('sidebar').classList.remove('open');
+  if(name==='dashboard') renderDashboard();
+  if(name==='kunden') renderKundenListe();
+  if(name==='angebote') renderAngeboteListe();
+  if(name==='rechnungen') renderRechnungenListe();
+  if(name==='einstellungen') fillEinstellungenForm();
+  location.hash = name;
+}
+
+document.getElementById('navList').addEventListener('click', e=>{
+  const a = e.target.closest('a[data-view]');
+  if(a) showView(a.dataset.view);
+});
+document.querySelectorAll('a.link[data-view]').forEach(a=>{
+  a.addEventListener('click', ()=>showView(a.dataset.view));
+});
+document.getElementById('hamburgerBtn').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+function renderDashboard(){
+  const jahr = new Date().getFullYear();
+  const angeboteJahr = DATA.angebote.filter(a=>(a.datum||'').startsWith(String(jahr)));
+  const offeneAngebote = DATA.angebote.filter(a=>a.status==='entwurf'||a.status==='versendet');
+  const rechnungenOffen = DATA.rechnungen.filter(r=>{
+    const st = getRechnungStatus(r);
+    return st==='offen'||st==='teilbezahlt'||st==='ueberfaellig';
+  });
+  const summeOffen = rechnungenOffen.reduce((s,r)=>s+restBetrag(r),0);
+  const ueberfaellig = rechnungenOffen.filter(r=>getRechnungStatus(r)==='ueberfaellig');
+  const umsatzJahr = DATA.rechnungen
+    .filter(r=>r.status!=='storniert' && (r.rechnungsdatum||'').startsWith(String(jahr)))
+    .reduce((s,r)=>s+sumsFor(r).brutto,0);
+
+  const stats = [
+    {label:'Offene Angebote', value: offeneAngebote.length, icon:'📄'},
+    {label:'Offene Forderungen', value: formatCurrency(summeOffen), icon:'💶'},
+    {label:'Überfällige Rechnungen', value: ueberfaellig.length, icon:'⚠️'},
+    {label:'Umsatz '+jahr, value: formatCurrency(umsatzJahr), icon:'📈'},
+  ];
+  document.getElementById('dashStats').innerHTML = stats.map(s=>`
+    <div class="stat-card"><div class="icon">${s.icon}</div>
+      <div><div class="label">${s.label}</div><div class="value">${s.value}</div></div>
+    </div>`).join('');
+
+  const neuesteAngebote = [...DATA.angebote].sort((a,b)=>(b.erstelltAm||'').localeCompare(a.erstelltAm||'')).slice(0,5);
+  document.getElementById('dashAngeboteList').innerHTML = neuesteAngebote.length ? neuesteAngebote.map(a=>`
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="openAngebotForm('${a.id}')">
+      <span>${escapeHtml(a.nummer)} — ${escapeHtml(kundeName(kundeById(a.kundeId)))}</span>
+      <span>${statusBadge('angebot',a.status)}</span>
+    </div>`).join('') : '<div class="empty-hint">Keine Angebote vorhanden.</div>';
+
+  const offeneList = [...rechnungenOffen].sort((a,b)=>(a.faelligkeit||'').localeCompare(b.faelligkeit||'')).slice(0,5);
+  document.getElementById('dashRechnungenList').innerHTML = offeneList.length ? offeneList.map(r=>`
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="openRechnungForm('${r.id}')">
+      <span>${escapeHtml(r.nummer)} — ${escapeHtml(kundeName(kundeById(r.kundeId)))}</span>
+      <span>${statusBadge('rechnung',getRechnungStatus(r))}</span>
+    </div>`).join('') : '<div class="empty-hint">Keine offenen Rechnungen.</div>';
+}
+
+/* =========================================================
+   STATUS BADGES
+========================================================= */
+function statusBadge(typ, status){
+  const map = {
+    angebot: {entwurf:['grey','Entwurf'], versendet:['blue','Versendet'], angenommen:['green','Angenommen'], abgelehnt:['red','Abgelehnt'], abgelaufen:['amber','Abgelaufen']},
+    rechnung: {offen:['blue','Offen'], teilbezahlt:['amber','Teilbezahlt'], bezahlt:['green','Bezahlt'], ueberfaellig:['red','Überfällig'], storniert:['grey','Storniert']}
+  };
+  const entry = (map[typ]||{})[status] || ['grey', status];
+  return `<span class="badge ${entry[0]}">${entry[1]}</span>`;
+}
+
+/* =========================================================
+   KUNDEN
+========================================================= */
+function renderKundenListe(){
+  const q = (document.getElementById('kundenSuche').value||'').toLowerCase();
+  const list = DATA.kunden.filter(k=>{
+    const hay = [kundeName(k), k.ort, k.email, k.telefon, k.nummer].join(' ').toLowerCase();
+    return hay.includes(q);
+  }).sort((a,b)=>kundeName(a).localeCompare(kundeName(b)));
+
+  const tbody = document.querySelector('#kundenTable tbody');
+  tbody.innerHTML = list.map(k=>`
+    <tr class="clickable" onclick="openKundeForm('${k.id}')">
+      <td>${escapeHtml(k.nummer||'–')}</td>
+      <td>${escapeHtml(kundeName(k))}</td>
+      <td>${escapeHtml(k.ort||'')}</td>
+      <td>${escapeHtml(k.telefon||'')}</td>
+      <td>${escapeHtml(k.email||'')}</td>
+      <td class="rowbtns"><button class="btn sm ghost" onclick="event.stopPropagation();openKundeForm('${k.id}')">Bearbeiten</button></td>
+    </tr>`).join('');
+  document.getElementById('kundenEmpty').style.display = list.length ? 'none' : 'block';
+}
+
+function nextKundenNummer(){
+  let max = 0;
+  DATA.kunden.forEach(k=>{
+    const m = /^K-(\d+)$/.exec(k.nummer||'');
+    if(m) max = Math.max(max, parseInt(m[1],10));
+  });
+  return 'K-' + String(max+1).padStart(4,'0');
+}
+
+function openKundeForm(id){
+  document.getElementById('kundeOverlay').classList.add('active');
+  document.getElementById('k_id').value = id || '';
+  document.getElementById('k_delete_btn').style.display = id ? 'inline-flex' : 'none';
+  if(id){
+    const k = kundeById(id);
+    document.getElementById('kundeFormTitle').textContent = 'Kunde bearbeiten';
+    document.querySelector(`input[name=k_typ][value="${k.typ||'firma'}"]`).checked = true;
+    document.getElementById('k_nummer').value = k.nummer||'';
+    document.getElementById('k_ustid').value = k.ustid||'';
+    document.getElementById('k_firma').value = k.firma||'';
+    document.getElementById('k_vorname').value = k.vorname||'';
+    document.getElementById('k_nachname').value = k.nachname||'';
+    document.getElementById('k_strasse').value = k.strasse||'';
+    document.getElementById('k_plz').value = k.plz||'';
+    document.getElementById('k_ort').value = k.ort||'';
+    document.getElementById('k_telefon').value = k.telefon||'';
+    document.getElementById('k_email').value = k.email||'';
+    document.getElementById('k_zahlungsziel').value = k.zahlungsziel||14;
+    document.getElementById('k_notizen').value = k.notizen||'';
+  } else {
+    document.getElementById('kundeFormTitle').textContent = 'Neuer Kunde';
+    ['k_ustid','k_firma','k_vorname','k_nachname','k_strasse','k_plz','k_ort','k_telefon','k_email','k_notizen']
+      .forEach(id2=>document.getElementById(id2).value='');
+    document.querySelector('input[name=k_typ][value="firma"]').checked = true;
+    document.getElementById('k_nummer').value = nextKundenNummer();
+    document.getElementById('k_zahlungsziel').value = 14;
+  }
+  toggleKundeTyp();
+}
+function closeKundeForm(){
+  document.getElementById('kundeOverlay').classList.remove('active');
+  window._quickKundePrefix = null;
+}
+function toggleKundeTyp(){
+  const typ = document.querySelector('input[name=k_typ]:checked').value;
+  document.getElementById('k_firma_field').style.display = typ==='firma' ? 'block' : 'none';
+}
+function saveKunde(){
+  const id = document.getElementById('k_id').value || uid();
+  const typ = document.querySelector('input[name=k_typ]:checked').value;
+  const kunde = {
+    id, typ,
+    nummer: document.getElementById('k_nummer').value.trim(),
+    ustid: document.getElementById('k_ustid').value.trim(),
+    firma: document.getElementById('k_firma').value.trim(),
+    vorname: document.getElementById('k_vorname').value.trim(),
+    nachname: document.getElementById('k_nachname').value.trim(),
+    strasse: document.getElementById('k_strasse').value.trim(),
+    plz: document.getElementById('k_plz').value.trim(),
+    ort: document.getElementById('k_ort').value.trim(),
+    telefon: document.getElementById('k_telefon').value.trim(),
+    email: document.getElementById('k_email').value.trim(),
+    zahlungsziel: Number(document.getElementById('k_zahlungsziel').value)||14,
+    notizen: document.getElementById('k_notizen').value.trim(),
+  };
+  if(typ==='firma' && !kunde.firma){ toast('Bitte Firmenname angeben.'); return; }
+  if(typ==='privat' && !kunde.vorname && !kunde.nachname){ toast('Bitte Namen angeben.'); return; }
+
+  const existingIdx = DATA.kunden.findIndex(k=>k.id===id);
+  if(existingIdx>=0){
+    kunde.erstelltAm = DATA.kunden[existingIdx].erstelltAm;
+    DATA.kunden[existingIdx] = kunde;
+  } else {
+    kunde.erstelltAm = new Date().toISOString();
+    DATA.kunden.push(kunde);
+  }
+  saveData();
+  const pendingPrefix = window._quickKundePrefix;
+  closeKundeForm();
+  renderKundenListe();
+  if(pendingPrefix){
+    selectKunde(pendingPrefix, id);
+  }
+  toast('Kunde gespeichert.');
+}
+function deleteKunde(){
+  const id = document.getElementById('k_id').value;
+  if(!id) return;
+  const used = DATA.angebote.some(a=>a.kundeId===id) || DATA.rechnungen.some(r=>r.kundeId===id);
+  if(used && !confirmAction('Dieser Kunde ist bereits in Angeboten/Rechnungen verwendet. Bereits erstellte Dokumente bleiben unverändert (Adress-Kopie). Kunde trotzdem löschen?')) return;
+  if(!used && !confirmAction('Kunde wirklich löschen?')) return;
+  DATA.kunden = DATA.kunden.filter(k=>k.id!==id);
+  saveData();
+  closeKundeForm();
+  renderKundenListe();
+  toast('Kunde gelöscht.');
+}
+
+/* Autocomplete used in Angebot/Rechnung forms */
+function autocompleteKunde(prefix){
+  const input = document.getElementById(prefix+'_kunde_suche');
+  const list = document.getElementById(prefix+'_kunde_list');
+  const q = input.value.toLowerCase();
+  const matches = DATA.kunden.filter(k=>kundeName(k).toLowerCase().includes(q) || (k.ort||'').toLowerCase().includes(q)).slice(0,8);
+  if(!matches.length){
+    list.innerHTML = `<div class="muted" style="padding:9px 12px;">Kein Treffer. <a class="link" onclick="quickNewKunde('${prefix}')">Neuen Kunden anlegen</a></div>`;
+  } else {
+    list.innerHTML = matches.map(k=>`
+      <div onclick="selectKunde('${prefix}','${k.id}')"><strong>${escapeHtml(kundeName(k))}</strong>
+      <div class="muted">${escapeHtml(k.ort||'')} ${k.nummer?('· '+escapeHtml(k.nummer)):''}</div></div>`).join('');
+  }
+  list.classList.add('active');
+}
+function selectKunde(prefix, id){
+  const k = kundeById(id);
+  document.getElementById(prefix+'_kunde_id').value = id;
+  document.getElementById(prefix+'_kunde_suche').value = kundeName(k);
+  document.getElementById(prefix+'_kunde_list').classList.remove('active');
+  if(prefix==='r'){ updateFaelligkeit(); }
+}
+function quickNewKunde(prefix){
+  document.getElementById(prefix+'_kunde_list').classList.remove('active');
+  window._quickKundePrefix = prefix;
+  openKundeForm();
+}
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.autocomplete')){
+    document.querySelectorAll('.autocomplete-list').forEach(l=>l.classList.remove('active'));
+  }
+});
+
+/* =========================================================
+   POSITIONEN (gemeinsam für Angebot & Rechnung)
+========================================================= */
+let workingPositionen = { a: [], r: [] };
+
+function newPosition(){
+  return { id: uid(), menge:1, einheit:'Stk', bezeichnung:'', einzelpreis:0, rabatt:0 };
+}
+function addPosition(prefix){
+  workingPositionen[prefix].push(newPosition());
+  renderPositionsTable(prefix);
+}
+function removePosition(prefix, idx){
+  workingPositionen[prefix].splice(idx,1);
+  renderPositionsTable(prefix);
+}
+function updatePos(prefix, idx, field, value){
+  const pos = workingPositionen[prefix][idx];
+  if(!pos) return;
+  if(field==='menge' || field==='einzelpreis' || field==='rabatt') pos[field] = Number(value)||0;
+  else pos[field] = value;
+  renderPositionsTable(prefix, true);
+}
+function positionGesamt(pos){
+  return (Number(pos.menge)||0) * (Number(pos.einzelpreis)||0) * (1 - (Number(pos.rabatt)||0)/100);
+}
+function renderPositionsTable(prefix, skipFocusReset){
+  const wrap = document.getElementById(prefix+'_positionen_wrap');
+  const positionen = workingPositionen[prefix];
+  const readonly = prefix==='r' && isRechnungLocked();
+  let html = `<div class="table-wrap"><table class="pos-table"><thead><tr>
+    <th style="width:70px;">Menge</th><th style="width:90px;">Einheit</th><th>Bezeichnung</th>
+    <th style="width:110px;">Einzelpreis €</th><th style="width:80px;">Rabatt %</th><th style="width:100px;" class="num">Gesamt</th><th style="width:30px;"></th>
+  </tr></thead><tbody>`;
+  positionen.forEach((pos,idx)=>{
+    html += `<tr>
+      <td><input type="number" step="0.01" value="${pos.menge}" ${readonly?'disabled':''} oninput="updatePos('${prefix}',${idx},'menge',this.value)"></td>
+      <td><select ${readonly?'disabled':''} onchange="updatePos('${prefix}',${idx},'einheit',this.value)">
+        ${['Stk','Std','m','m²','m³','kg','pauschal','Satz'].map(e=>`<option value="${e}" ${pos.einheit===e?'selected':''}>${e}</option>`).join('')}
+      </select></td>
+      <td><input type="text" value="${escapeHtml(pos.bezeichnung)}" ${readonly?'disabled':''} placeholder="Leistung / Material" oninput="updatePos('${prefix}',${idx},'bezeichnung',this.value)"></td>
+      <td><input type="number" step="0.01" value="${pos.einzelpreis}" ${readonly?'disabled':''} oninput="updatePos('${prefix}',${idx},'einzelpreis',this.value)"></td>
+      <td><input type="number" step="0.1" value="${pos.rabatt}" ${readonly?'disabled':''} oninput="updatePos('${prefix}',${idx},'rabatt',this.value)"></td>
+      <td class="num">${formatCurrency(positionGesamt(pos))}</td>
+      <td>${readonly?'':`<button class="btn-del" onclick="removePosition('${prefix}',${idx})" title="Entfernen">✕</button>`}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+  if(!positionen.length) html += `<div class="empty-hint">Noch keine Positionen. Mit "+ Position hinzufügen" starten.</div>`;
+  wrap.innerHTML = html;
+  updateSums(prefix);
+}
+function updateSums(prefix){
+  const positionen = workingPositionen[prefix];
+  const ustSatz = Number(document.getElementById(prefix+'_ustsatz').value)||0;
+  const netto = positionen.reduce((s,p)=>s+positionGesamt(p),0);
+  const ust = netto * ustSatz/100;
+  const brutto = netto + ust;
+  document.getElementById(prefix+'_sums').innerHTML = `
+    <div><span>Netto</span><span>${formatCurrency(netto)}</span></div>
+    <div><span>USt (${ustSatz}%)</span><span>${formatCurrency(ust)}</span></div>
+    <div class="total"><span>Brutto</span><span>${formatCurrency(brutto)}</span></div>`;
+  return {netto, ust, brutto};
+}
+document.getElementById('a_ustsatz').addEventListener('change', ()=>updateSums('a'));
+document.getElementById('r_ustsatz').addEventListener('change', ()=>updateSums('r'));
+
+function sumsFor(doc){
+  const netto = (doc.positionen||[]).reduce((s,p)=>s+positionGesamt(p),0);
+  const ust = netto * (Number(doc.ustSatz)||0)/100;
+  return { netto, ust, brutto: netto+ust };
+}
+
+/* =========================================================
+   ANGEBOTE
+========================================================= */
+function allocateNummer(typ){
+  const prefix = typ==='angebot' ? (DATA.firma.prefixAngebot||'AN') : (DATA.firma.prefixRechnung||'RE');
+  const jahr = new Date().getFullYear();
+  const bucket = DATA.counters[typ==='angebot'?'angebot':'rechnung'];
+  bucket[jahr] = (bucket[jahr]||0) + 1;
+  return `${prefix}-${jahr}-${bucket[jahr]}`;
+}
+
+function renderAngeboteListe(){
+  const q = (document.getElementById('angeboteSuche').value||'').toLowerCase();
+  const statusFilter = document.getElementById('angeboteStatusFilter').value;
+  let list = DATA.angebote.filter(a=>{
+    const hay = [a.nummer, a.bezeichnung, kundeName(kundeById(a.kundeId))].join(' ').toLowerCase();
+    return hay.includes(q) && (!statusFilter || a.status===statusFilter);
+  }).sort((a,b)=>(b.nummer||'').localeCompare(a.nummer||'', undefined, {numeric:true}));
+
+  document.getElementById('angeboteTbody').innerHTML = list.map(a=>`
+    <tr class="clickable" onclick="openAngebotForm('${a.id}')">
+      <td>${escapeHtml(a.nummer)}</td>
+      <td>${escapeHtml(kundeName(kundeById(a.kundeId)))}</td>
+      <td>${escapeHtml(a.bezeichnung||'')}</td>
+      <td>${formatDate(a.datum)}</td>
+      <td>${statusBadge('angebot',a.status)}</td>
+      <td class="num">${formatCurrency(sumsFor(a).netto)}</td>
+      <td class="rowbtns"><button class="btn sm ghost" onclick="event.stopPropagation();openAngebotForm('${a.id}')">Öffnen</button></td>
+    </tr>`).join('');
+  document.getElementById('angeboteEmpty').style.display = list.length ? 'none' : 'block';
+}
+
+let currentAngebotDraftFromId = null;
+
+function openAngebotForm(id, draftFromRechnungConvert){
+  document.getElementById('a_id').value = id || '';
+  workingPositionen.a = [];
+  if(id){
+    const a = DATA.angebote.find(x=>x.id===id);
+    document.getElementById('angebotFormTitle').textContent = '📄 Angebot ' + a.nummer;
+    document.getElementById('a_nummer').value = a.nummer;
+    document.getElementById('a_kunde_id').value = a.kundeId||'';
+    document.getElementById('a_kunde_suche').value = kundeName(kundeById(a.kundeId)) || (a.empfaenger&&a.empfaenger.name) || '';
+    document.getElementById('a_bezeichnung').value = a.bezeichnung||'';
+    document.getElementById('a_datum').value = a.datum||todayISO();
+    document.getElementById('a_gueltig').value = a.gueltigBis||'';
+    document.getElementById('a_status').value = a.status||'entwurf';
+    document.getElementById('a_anschreiben').value = a.anschreiben||'';
+    document.getElementById('a_ustsatz').value = a.ustSatz!=null ? a.ustSatz : (DATA.firma.kleinunternehmer?0:19);
+    workingPositionen.a = JSON.parse(JSON.stringify(a.positionen||[]));
+    document.getElementById('ang_delete_btn').style.display='inline-flex';
+    document.getElementById('ang_vorschau_btn').style.display='inline-flex';
+    document.getElementById('ang_druck_btn').style.display='inline-flex';
+    document.getElementById('ang_convert_btn').style.display='inline-flex';
+  } else {
+    document.getElementById('angebotFormTitle').textContent = '📄 Neues Angebot';
+    document.getElementById('a_nummer').value = '(wird beim Speichern vergeben)';
+    document.getElementById('a_kunde_id').value='';
+    document.getElementById('a_kunde_suche').value='';
+    document.getElementById('a_bezeichnung').value='';
+    document.getElementById('a_datum').value = todayISO();
+    document.getElementById('a_gueltig').value = addDaysISO(todayISO(),14);
+    document.getElementById('a_status').value = 'entwurf';
+    document.getElementById('a_anschreiben').value = 'Sehr geehrte Damen und Herren,\n\nvielen Dank für Ihre Anfrage. Gerne unterbreiten wir Ihnen folgendes Angebot:';
+    document.getElementById('a_ustsatz').value = DATA.firma.kleinunternehmer ? 0 : 19;
+    document.getElementById('ang_delete_btn').style.display='none';
+    document.getElementById('ang_vorschau_btn').style.display='none';
+    document.getElementById('ang_druck_btn').style.display='none';
+    document.getElementById('ang_convert_btn').style.display='none';
+  }
+  renderPositionsTable('a');
+  showView('angebot-form');
+}
+function saveAngebot(){
+  const kundeId = document.getElementById('a_kunde_id').value;
+  if(!kundeId){ toast('Bitte einen Kunden auswählen.'); return; }
+  if(!workingPositionen.a.length){ toast('Bitte mindestens eine Position hinzufügen.'); return; }
+  const id = document.getElementById('a_id').value || uid();
+  const isNew = !document.getElementById('a_id').value;
+  const kunde = kundeById(kundeId);
+  const angebot = {
+    id,
+    nummer: isNew ? allocateNummer('angebot') : DATA.angebote.find(x=>x.id===id).nummer,
+    kundeId,
+    empfaenger: kundeSnapshot(kunde),
+    bezeichnung: document.getElementById('a_bezeichnung').value.trim(),
+    datum: document.getElementById('a_datum').value || todayISO(),
+    gueltigBis: document.getElementById('a_gueltig').value,
+    status: document.getElementById('a_status').value,
+    anschreiben: document.getElementById('a_anschreiben').value,
+    ustSatz: Number(document.getElementById('a_ustsatz').value),
+    positionen: JSON.parse(JSON.stringify(workingPositionen.a)),
+  };
+  const idx = DATA.angebote.findIndex(x=>x.id===id);
+  if(idx>=0){ angebot.erstelltAm = DATA.angebote[idx].erstelltAm; DATA.angebote[idx] = angebot; }
+  else { angebot.erstelltAm = new Date().toISOString(); DATA.angebote.push(angebot); }
+  saveData();
+  toast('Angebot gespeichert.');
+  openAngebotForm(id);
+  renderAngeboteListe();
+}
+function deleteAngebot(){
+  const id = document.getElementById('a_id').value;
+  if(!id) return;
+  if(!confirmAction('Angebot wirklich löschen?')) return;
+  DATA.angebote = DATA.angebote.filter(a=>a.id!==id);
+  saveData();
+  showView('angebote');
+  toast('Angebot gelöscht.');
+}
+function kundeSnapshot(k){
+  if(!k) return null;
+  return {
+    name: kundeName(k), strasse:k.strasse, plz:k.plz, ort:k.ort,
+    ustid:k.ustid, email:k.email, telefon:k.telefon, zahlungsziel:k.zahlungsziel
+  };
+}
+function angebotInRechnungUmwandeln(){
+  const id = document.getElementById('a_id').value;
+  const a = DATA.angebote.find(x=>x.id===id);
+  if(!a) return;
+  if(!confirmAction('Aus diesem Angebot eine neue Rechnung erstellen?')) return;
+  openRechnungForm(null, a);
+}
+
+/* =========================================================
+   RECHNUNGEN
+========================================================= */
+function restBetrag(r){
+  if(r.status==='storniert') return 0;
+  const bezahlt = (r.zahlungen||[]).reduce((s,z)=>s+Number(z.betrag||0),0);
+  return Math.max(0, sumsFor(r).brutto - bezahlt);
+}
+function bezahltBetrag(r){
+  return (r.zahlungen||[]).reduce((s,z)=>s+Number(z.betrag||0),0);
+}
+function getRechnungStatus(r){
+  if(r.status==='storniert') return 'storniert';
+  const rest = restBetrag(r);
+  const bezahlt = bezahltBetrag(r);
+  if(rest <= 0.004) return 'bezahlt';
+  if(bezahlt > 0) return 'teilbezahlt';
+  if(r.faelligkeit && r.faelligkeit < todayISO()) return 'ueberfaellig';
+  return 'offen';
+}
+function isRechnungLocked(){
+  const id = document.getElementById('r_id').value;
+  if(!id) return false;
+  const r = DATA.rechnungen.find(x=>x.id===id);
+  return r && r.status==='storniert';
+}
+
+function renderRechnungenListe(){
+  const q = (document.getElementById('rechnungenSuche').value||'').toLowerCase();
+  const statusFilter = document.getElementById('rechnungenStatusFilter').value;
+  let list = DATA.rechnungen.filter(r=>{
+    const hay = [r.nummer, r.bezeichnung, kundeName(kundeById(r.kundeId))].join(' ').toLowerCase();
+    const st = getRechnungStatus(r);
+    return hay.includes(q) && (!statusFilter || st===statusFilter);
+  }).sort((a,b)=>(b.nummer||'').localeCompare(a.nummer||'', undefined, {numeric:true}));
+
+  document.getElementById('rechnungenTbody').innerHTML = list.map(r=>`
+    <tr class="clickable" onclick="openRechnungForm('${r.id}')">
+      <td>${escapeHtml(r.nummer)}</td>
+      <td>${escapeHtml(kundeName(kundeById(r.kundeId)))}</td>
+      <td>${formatDate(r.rechnungsdatum)}</td>
+      <td>${formatDate(r.faelligkeit)}</td>
+      <td>${statusBadge('rechnung',getRechnungStatus(r))}</td>
+      <td class="num">${formatCurrency(sumsFor(r).brutto)}</td>
+      <td class="num">${formatCurrency(restBetrag(r))}</td>
+      <td class="rowbtns"><button class="btn sm ghost" onclick="event.stopPropagation();openRechnungForm('${r.id}')">Öffnen</button></td>
+    </tr>`).join('');
+  document.getElementById('rechnungenEmpty').style.display = list.length ? 'none' : 'block';
+}
+
+function updateFaelligkeit(){
+  const kundeId = document.getElementById('r_kunde_id').value;
+  const kunde = kundeById(kundeId);
+  const tage = kunde ? (kunde.zahlungsziel||14) : 14;
+  const datum = document.getElementById('r_datum').value || todayISO();
+  if(!document.getElementById('r_id').value || !document.getElementById('r_faelligkeit').value){
+    document.getElementById('r_faelligkeit').value = addDaysISO(datum, tage);
+  }
+}
+
+function openRechnungForm(id, ausAngebot){
+  document.getElementById('r_id').value = id || '';
+  workingPositionen.r = [];
+  document.getElementById('r_storno_hinweis').style.display = 'none';
+  if(id){
+    const r = DATA.rechnungen.find(x=>x.id===id);
+    document.getElementById('rechnungFormTitle').textContent = '🧾 Rechnung ' + r.nummer;
+    document.getElementById('r_nummer').value = r.nummer;
+    document.getElementById('r_kunde_id').value = r.kundeId||'';
+    document.getElementById('r_kunde_suche').value = kundeName(kundeById(r.kundeId)) || (r.empfaenger&&r.empfaenger.name) || '';
+    document.getElementById('r_bezeichnung').value = r.bezeichnung||'';
+    document.getElementById('r_datum').value = r.rechnungsdatum||todayISO();
+    document.getElementById('r_leistungsdatum').value = r.leistungsdatum||r.rechnungsdatum||todayISO();
+    document.getElementById('r_faelligkeit').value = r.faelligkeit||'';
+    document.getElementById('r_anschreiben').value = r.anschreiben||'';
+    document.getElementById('r_ustsatz').value = r.ustSatz!=null ? r.ustSatz : (DATA.firma.kleinunternehmer?0:19);
+    workingPositionen.r = JSON.parse(JSON.stringify(r.positionen||[]));
+    const locked = r.status==='storniert';
+    document.getElementById('r_storno_hinweis').style.display = locked ? 'block' : 'none';
+    document.getElementById('re_vorschau_btn').style.display='inline-flex';
+    document.getElementById('re_druck_btn').style.display='inline-flex';
+    document.getElementById('re_zahlung_btn').style.display= locked ? 'none' : 'inline-flex';
+    document.getElementById('re_storno_btn').style.display= locked ? 'none' : 'inline-flex';
+    document.getElementById('re_storno_btn').textContent = 'Stornieren';
+    document.getElementById('re_save_btn').disabled = locked;
+    renderZahlungenListe(r);
+  } else {
+    document.getElementById('rechnungFormTitle').textContent = '🧾 Neue Rechnung';
+    document.getElementById('r_nummer').value = '(wird beim Speichern vergeben)';
+    document.getElementById('r_datum').value = todayISO();
+    document.getElementById('r_leistungsdatum').value = todayISO();
+    document.getElementById('r_faelligkeit').value = addDaysISO(todayISO(),14);
+    document.getElementById('re_vorschau_btn').style.display='none';
+    document.getElementById('re_druck_btn').style.display='none';
+    document.getElementById('re_zahlung_btn').style.display='none';
+    document.getElementById('re_storno_btn').style.display='none';
+    document.getElementById('re_save_btn').disabled = false;
+    if(ausAngebot){
+      const a = ausAngebot;
+      document.getElementById('r_kunde_id').value = a.kundeId||'';
+      document.getElementById('r_kunde_suche').value = kundeName(kundeById(a.kundeId)) || (a.empfaenger&&a.empfaenger.name) || '';
+      document.getElementById('r_bezeichnung').value = a.bezeichnung||'';
+      document.getElementById('r_anschreiben').value = 'Sehr geehrte Damen und Herren,\n\nwir erlauben uns, Ihnen wie folgt in Rechnung zu stellen:';
+      document.getElementById('r_ustsatz').value = a.ustSatz;
+      workingPositionen.r = JSON.parse(JSON.stringify(a.positionen||[]));
+      window._rechnungAusAngebotId = a.id;
+      updateFaelligkeit();
+    } else {
+      document.getElementById('r_kunde_id').value='';
+      document.getElementById('r_kunde_suche').value='';
+      document.getElementById('r_bezeichnung').value='';
+      document.getElementById('r_anschreiben').value = 'Sehr geehrte Damen und Herren,\n\nwir erlauben uns, Ihnen wie folgt in Rechnung zu stellen:';
+      document.getElementById('r_ustsatz').value = DATA.firma.kleinunternehmer ? 0 : 19;
+      window._rechnungAusAngebotId = null;
+    }
+    document.getElementById('r_zahlungen_wrap').innerHTML = '';
+  }
+  renderPositionsTable('r');
+  showView('rechnung-form');
+}
+function saveRechnung(){
+  const kundeId = document.getElementById('r_kunde_id').value;
+  if(!kundeId){ toast('Bitte einen Kunden auswählen.'); return; }
+  if(!workingPositionen.r.length){ toast('Bitte mindestens eine Position hinzufügen.'); return; }
+  const id = document.getElementById('r_id').value || uid();
+  const isNew = !document.getElementById('r_id').value;
+  const kunde = kundeById(kundeId);
+  const existing = DATA.rechnungen.find(x=>x.id===id);
+  const rechnung = {
+    id,
+    nummer: isNew ? allocateNummer('rechnung') : existing.nummer,
+    kundeId,
+    empfaenger: kundeSnapshot(kunde),
+    bezeichnung: document.getElementById('r_bezeichnung').value.trim(),
+    rechnungsdatum: document.getElementById('r_datum').value || todayISO(),
+    leistungsdatum: document.getElementById('r_leistungsdatum').value,
+    faelligkeit: document.getElementById('r_faelligkeit').value,
+    anschreiben: document.getElementById('r_anschreiben').value,
+    ustSatz: Number(document.getElementById('r_ustsatz').value),
+    positionen: JSON.parse(JSON.stringify(workingPositionen.r)),
+    status: existing ? existing.status : 'offen',
+    zahlungen: existing ? existing.zahlungen : [],
+    angebotId: existing ? existing.angebotId : (window._rechnungAusAngebotId || null),
+  };
+  if(existing){ rechnung.erstelltAm = existing.erstelltAm; Object.assign(existing, rechnung); }
+  else { rechnung.erstelltAm = new Date().toISOString(); DATA.rechnungen.push(rechnung); }
+  saveData();
+  toast('Rechnung gespeichert.');
+  openRechnungForm(id);
+  renderRechnungenListe();
+}
+function renderZahlungenListe(r){
+  const wrap = document.getElementById('r_zahlungen_wrap');
+  const zahlungen = r.zahlungen||[];
+  if(!zahlungen.length){ wrap.innerHTML = '<div class="helptext">Noch keine Zahlungen erfasst.</div>'; return; }
+  wrap.innerHTML = `<h4 style="margin-bottom:8px;">Zahlungen</h4><table><thead><tr><th>Datum</th><th>Notiz</th><th class="num">Betrag</th></tr></thead><tbody>
+    ${zahlungen.map(z=>`<tr><td>${formatDate(z.datum)}</td><td>${escapeHtml(z.notiz||'')}</td><td class="num">${formatCurrency(z.betrag)}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+function openZahlungModal(){
+  document.getElementById('z_datum').value = todayISO();
+  const id = document.getElementById('r_id').value;
+  const r = DATA.rechnungen.find(x=>x.id===id);
+  document.getElementById('z_betrag').value = restBetrag(r).toFixed(2);
+  document.getElementById('z_notiz').value = '';
+  document.getElementById('zahlungOverlay').classList.add('active');
+}
+function closeZahlungModal(){ document.getElementById('zahlungOverlay').classList.remove('active'); }
+function saveZahlung(){
+  const id = document.getElementById('r_id').value;
+  const r = DATA.rechnungen.find(x=>x.id===id);
+  const betrag = Number(document.getElementById('z_betrag').value);
+  if(!betrag || betrag<=0){ toast('Bitte einen gültigen Betrag angeben.'); return; }
+  r.zahlungen = r.zahlungen || [];
+  r.zahlungen.push({ id: uid(), datum: document.getElementById('z_datum').value||todayISO(), betrag, notiz: document.getElementById('z_notiz').value.trim() });
+  saveData();
+  closeZahlungModal();
+  openRechnungForm(id);
+  renderRechnungenListe();
+  toast('Zahlung erfasst.');
+}
+function stornoRechnung(){
+  const id = document.getElementById('r_id').value;
+  const r = DATA.rechnungen.find(x=>x.id===id);
+  if(!r) return;
+  if(!confirmAction('Rechnung '+r.nummer+' wirklich stornieren? Die Rechnung bleibt zur Dokumentation erhalten (GoBD), wird aber als storniert markiert und für Änderungen gesperrt.')) return;
+  r.status = 'storniert';
+  r.storniertAm = new Date().toISOString();
+  saveData();
+  openRechnungForm(id);
+  renderRechnungenListe();
+  toast('Rechnung storniert.');
+}
+
+/* =========================================================
+   EINSTELLUNGEN
+========================================================= */
+function fillEinstellungenForm(){
+  const f = DATA.firma;
+  document.getElementById('e_firmenname').value = f.firmenname||'';
+  document.getElementById('e_strasse').value = f.strasse||'';
+  document.getElementById('e_plz').value = f.plz||'';
+  document.getElementById('e_ort').value = f.ort||'';
+  document.getElementById('e_telefon').value = f.telefon||'';
+  document.getElementById('e_email').value = f.email||'';
+  document.getElementById('e_web').value = f.web||'';
+  document.getElementById('e_gf').value = f.gf||'';
+  document.getElementById('e_kleinunternehmer').checked = !!f.kleinunternehmer;
+  document.getElementById('e_steuernummer').value = f.steuernummer||'';
+  document.getElementById('e_ustid').value = f.ustid||'';
+  document.getElementById('e_bank').value = f.bank||'';
+  document.getElementById('e_iban').value = f.iban||'';
+  document.getElementById('e_bic').value = f.bic||'';
+  document.getElementById('e_prefix_angebot').value = f.prefixAngebot||'AN';
+  document.getElementById('e_prefix_rechnung').value = f.prefixRechnung||'RE';
+  document.getElementById('e_footer').value = f.footer||'';
+  document.getElementById('e_logo_preview').innerHTML = f.logo ? `<img src="${f.logo}" style="max-height:50px;">` : '';
+  document.getElementById('firmaNameSmall').textContent = f.firmenname || 'Anvolt GmbH';
+}
+function toggleKleinunternehmer(){ /* nur visuelle Erinnerung, Wirkung beim Speichern neuer Dokumente */ }
+function handleLogoUpload(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(){
+    DATA.firma.logo = reader.result;
+    saveData();
+    document.getElementById('e_logo_preview').innerHTML = `<img src="${reader.result}" style="max-height:50px;">`;
+    toast('Logo gespeichert.');
+  };
+  reader.readAsDataURL(file);
+}
+function saveEinstellungen(){
+  DATA.firma = {
+    firmenname: document.getElementById('e_firmenname').value.trim(),
+    strasse: document.getElementById('e_strasse').value.trim(),
+    plz: document.getElementById('e_plz').value.trim(),
+    ort: document.getElementById('e_ort').value.trim(),
+    telefon: document.getElementById('e_telefon').value.trim(),
+    email: document.getElementById('e_email').value.trim(),
+    web: document.getElementById('e_web').value.trim(),
+    gf: document.getElementById('e_gf').value.trim(),
+    logo: DATA.firma.logo||'',
+    kleinunternehmer: document.getElementById('e_kleinunternehmer').checked,
+    steuernummer: document.getElementById('e_steuernummer').value.trim(),
+    ustid: document.getElementById('e_ustid').value.trim(),
+    bank: document.getElementById('e_bank').value.trim(),
+    iban: document.getElementById('e_iban').value.trim(),
+    bic: document.getElementById('e_bic').value.trim(),
+    prefixAngebot: document.getElementById('e_prefix_angebot').value.trim() || 'AN',
+    prefixRechnung: document.getElementById('e_prefix_rechnung').value.trim() || 'RE',
+    footer: document.getElementById('e_footer').value,
+  };
+  saveData();
+  fillEinstellungenForm();
+  toast('Einstellungen gespeichert.');
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify(DATA,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'handwerk-programm-backup-' + todayISO() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importData(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  if(!confirmAction('Aktuelle Daten durch das Backup ersetzen? Dies kann nicht rückgängig gemacht werden.')) { evt.target.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = function(){
+    try{
+      const parsed = JSON.parse(reader.result);
+      DATA = Object.assign(defaultData(), parsed);
+      saveData();
+      toast('Backup importiert.');
+      showView('dashboard');
+    }catch(e){
+      toast('Fehler: Datei ist kein gültiges Backup.');
+    }
+    evt.target.value='';
+  };
+  reader.readAsText(file);
+}
+function resetAllData(){
+  if(!confirmAction('WIRKLICH alle Daten (Kunden, Angebote, Rechnungen, Einstellungen) unwiderruflich löschen?')) return;
+  if(!confirmAction('Letzte Bestätigung: Alle Daten löschen?')) return;
+  DATA = defaultData();
+  saveData();
+  showView('dashboard');
+  toast('Alle Daten wurden gelöscht.');
+}
+
+/* =========================================================
+   DRUCK / PDF (Browser-Druck)
+========================================================= */
+function buildDocumentHtml(typ, doc){
+  const f = DATA.firma;
+  const empf = doc.empfaenger || kundeSnapshot(kundeById(doc.kundeId)) || {};
+  const sums = sumsFor(doc);
+  const titel = typ==='angebot' ? 'Angebot' : 'Rechnung';
+  const nummerLabel = typ==='angebot' ? 'Angebotsnummer' : 'Rechnungsnummer';
+  const datumLabel = typ==='angebot' ? 'Datum' : 'Rechnungsdatum';
+  const datum = typ==='angebot' ? doc.datum : doc.rechnungsdatum;
+  const zusatzZeilen = typ==='angebot'
+    ? (doc.gueltigBis ? `<tr><td>Gültig bis:</td><td>${formatDate(doc.gueltigBis)}</td></tr>` : '')
+    : `<tr><td>Leistungsdatum:</td><td>${formatDate(doc.leistungsdatum)}</td></tr><tr><td>Fällig am:</td><td>${formatDate(doc.faelligkeit)}</td></tr>`;
+
+  const positionenRows = (doc.positionen||[]).map((p,i)=>`
+    <tr><td>${i+1}</td><td>${p.menge} ${escapeHtml(p.einheit)}</td><td>${escapeHtml(p.bezeichnung)}</td>
+    <td style="text-align:right;">${formatCurrency(p.einzelpreis)}</td>
+    <td style="text-align:right;">${p.rabatt?p.rabatt+'%':''}</td>
+    <td style="text-align:right;">${formatCurrency(positionGesamt(p))}</td></tr>`).join('');
+
+  const stornoHinweis = (typ==='rechnung' && doc.status==='storniert')
+    ? `<div style="color:#dc2626;font-weight:700;margin-bottom:10px;">STORNIERT</div>` : '';
+
+  return `
+    <div class="doc-head">
+      <div>
+        <div style="font-size:9px;color:#777;margin-bottom:16px;">${escapeHtml(f.firmenname||'')} · ${escapeHtml(f.strasse||'')} · ${escapeHtml(f.plz||'')} ${escapeHtml(f.ort||'')}</div>
+        <div class="doc-addr">
+          <strong>${escapeHtml(empf.name||'')}</strong><br>
+          ${escapeHtml(empf.strasse||'')}<br>
+          ${escapeHtml(empf.plz||'')} ${escapeHtml(empf.ort||'')}
+        </div>
+      </div>
+      <div>
+        ${f.logo ? `<div class="doc-logo"><img src="${f.logo}"></div>` : `<div style="font-weight:700;font-size:16px;">${escapeHtml(f.firmenname||'')}</div>`}
+        <div class="doc-meta" style="margin-top:12px;"><table>
+          <tr><td>${nummerLabel}:</td><td><strong>${escapeHtml(doc.nummer)}</strong></td></tr>
+          <tr><td>${datumLabel}:</td><td>${formatDate(datum)}</td></tr>
+          ${zusatzZeilen}
+          ${empf.ustid ? `<tr><td>USt-IdNr. Kunde:</td><td>${escapeHtml(empf.ustid)}</td></tr>`:''}
+        </table></div>
+      </div>
+    </div>
+    ${stornoHinweis}
+    <div class="doc-title">${titel} ${escapeHtml(doc.nummer)}${doc.bezeichnung?' – '+escapeHtml(doc.bezeichnung):''}</div>
+    <div class="doc-intro">${escapeHtml(doc.anschreiben||'')}</div>
+    <table class="doc-table">
+      <thead><tr><th>Pos.</th><th>Menge</th><th>Bezeichnung</th><th style="text-align:right;">Einzelpreis</th><th style="text-align:right;">Rabatt</th><th style="text-align:right;">Gesamt</th></tr></thead>
+      <tbody>${positionenRows}</tbody>
+    </table>
+    <div class="sums">
+      <div><span>Netto</span><span>${formatCurrency(sums.netto)}</span></div>
+      <div><span>USt (${doc.ustSatz}%)</span><span>${formatCurrency(sums.ust)}</span></div>
+      <div class="total"><span>${typ==='angebot'?'Gesamtbetrag':'Rechnungsbetrag'}</span><span>${formatCurrency(sums.brutto)}</span></div>
+      ${typ==='rechnung' ? `<div><span>bereits bezahlt</span><span>${formatCurrency(bezahltBetrag(doc))}</span></div>
+      <div class="total"><span>Offener Betrag</span><span>${formatCurrency(restBetrag(doc))}</span></div>` : ''}
+    </div>
+    ${doc.ustSatz==0 ? '<div style="font-size:11px;margin-top:10px;">Gemäß §19 UStG wird keine Umsatzsteuer berechnet.</div>' : ''}
+    <div class="doc-footer">
+      <div><strong>${escapeHtml(f.firmenname||'')}</strong>\n${escapeHtml(f.strasse||'')}\n${escapeHtml(f.plz||'')} ${escapeHtml(f.ort||'')}\n${escapeHtml(f.telefon||'')}\n${escapeHtml(f.email||'')}</div>
+      <div>${f.gf?('Geschäftsführung: '+escapeHtml(f.gf)+'\\n'):''}${f.steuernummer?('Steuernummer: '+escapeHtml(f.steuernummer)+'\\n'):''}${f.ustid?('USt-IdNr.: '+escapeHtml(f.ustid)):''}</div>
+      <div>${f.bank?('Bank: '+escapeHtml(f.bank)+'\\n'):''}${f.iban?('IBAN: '+escapeHtml(f.iban)+'\\n'):''}${f.bic?('BIC: '+escapeHtml(f.bic)):''}</div>
+    </div>
+    ${f.footer ? `<div class="doc-footer" style="border:none;margin-top:6px;"><div>${escapeHtml(f.footer)}</div></div>` : ''}
+  `;
+}
+function getCurrentDoc(typ){
+  if(typ==='angebot'){
+    const id = document.getElementById('a_id').value;
+    if(id) return DATA.angebote.find(x=>x.id===id);
+    return {
+      nummer: document.getElementById('a_nummer').value,
+      bezeichnung: document.getElementById('a_bezeichnung').value,
+      datum: document.getElementById('a_datum').value,
+      gueltigBis: document.getElementById('a_gueltig').value,
+      anschreiben: document.getElementById('a_anschreiben').value,
+      ustSatz: Number(document.getElementById('a_ustsatz').value),
+      positionen: workingPositionen.a,
+      empfaenger: kundeSnapshot(kundeById(document.getElementById('a_kunde_id').value)),
+    };
+  } else {
+    const id = document.getElementById('r_id').value;
+    if(id) return DATA.rechnungen.find(x=>x.id===id);
+    return {
+      nummer: document.getElementById('r_nummer').value,
+      bezeichnung: document.getElementById('r_bezeichnung').value,
+      rechnungsdatum: document.getElementById('r_datum').value,
+      leistungsdatum: document.getElementById('r_leistungsdatum').value,
+      faelligkeit: document.getElementById('r_faelligkeit').value,
+      anschreiben: document.getElementById('r_anschreiben').value,
+      ustSatz: Number(document.getElementById('r_ustsatz').value),
+      positionen: workingPositionen.r,
+      empfaenger: kundeSnapshot(kundeById(document.getElementById('r_kunde_id').value)),
+      zahlungen: [],
+    };
+  }
+}
+function vorschauDokument(typ){
+  const doc = getCurrentDoc(typ);
+  const win = window.open('', '_blank');
+  win.document.write(`<html><head><title>Vorschau ${escapeHtml(doc.nummer||'')}</title>
+    <style>body{font-family:Arial,sans-serif;padding:40px;color:#111;}
+    ${document.querySelector('style').textContent.split('@media print')[0]}
+    </style></head><body>${buildDocumentHtml(typ, doc)}</body></html>`);
+  win.document.close();
+}
+function druckenDokument(typ){
+  const doc = getCurrentDoc(typ);
+  document.getElementById('druckbereich').innerHTML = buildDocumentHtml(typ, doc);
+  window.print();
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+function init(){
+  fillEinstellungenForm();
+  const hash = location.hash.replace('#','');
+  const valid = ['dashboard','kunden','angebote','rechnungen','einstellungen'];
+  showView(valid.includes(hash) ? hash : 'dashboard');
+}
+init();
+</script>
+</body>
+</html>
